@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "708706316892",
+    "project_id": "reminderapptodo-ac056",
+    "storage_bucket": "reminderapptodo-ac056.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708706316892:android:a407c190b8ab6b4ca2ac99",
+        "android_client_info": {
+          "package_name": "com.example.reminderapp_todo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVOOialROBDUQ-7SwhxWFqpy-cSDijHL8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
