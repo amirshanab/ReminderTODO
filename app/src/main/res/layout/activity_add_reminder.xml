@@ -1,38 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+    android:padding="16dp">
 
     <EditText
         android:id="@+id/titleEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Reminder Title"
-        android:inputType="text" />
+        android:hint="Title"
+        android:inputType="text"
+        android:padding="10dp"
+        android:layout_marginBottom="16dp" />
 
     <EditText
-        android:id="@+id/dateTimeEditText"
+        android:id="@+id/dateEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Date and Time"
-        android:inputType="datetime"
+        android:hint="Date"
+        android:inputType="date"
         android:focusable="false"
-        android:clickable="true" />
+        android:clickable="true"
+        android:padding="10dp"
+        android:layout_below="@id/titleEditText"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/timeEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Time"
+        android:inputType="time"
+        android:focusable="false"
+        android:clickable="true"
+        android:padding="10dp"
+        android:layout_below="@id/dateEditText"
+        android:layout_marginBottom="16dp" />
 
     <Button
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Save Reminder"
-        android:layout_marginTop="16dp" />
-</LinearLayout>
+        android:layout_below="@id/timeEditText"
+        android:layout_marginBottom="16dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+</RelativeLayout>
