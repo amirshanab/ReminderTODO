@@ -8,7 +8,7 @@ public class Reminder implements Parcelable {
     private String title;
     private String date;
     private String time;
-    private boolean isDone;  // Assuming you have a field to track if the reminder is done
+    private boolean isDone;
 
     public Reminder() {
         // Public no-arg constructor needed for Firestore
@@ -54,6 +54,7 @@ public class Reminder implements Parcelable {
         dest.writeByte((byte) (isDone ? 1 : 0));
     }
 
+    // Getters and setters
     public String getId() {
         return id;
     }

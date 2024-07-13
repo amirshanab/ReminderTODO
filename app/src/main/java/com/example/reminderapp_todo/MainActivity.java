@@ -10,10 +10,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,29 +52,37 @@ public class MainActivity extends AppCompatActivity implements ReminderAdapter.O
             startActivityForResult(intent, 1);
         });
 
-        loadReminders(currentUser.getUid());
+        loadReminders();
     }
 
-    private void loadReminders(String userId) {
-        progressBar.setVisibility(View.VISIBLE);
-        db.collection("users").document(userId).collection("reminders")
-                .get()
-                .addOnCompleteListener(task -> {
-                    progressBar.setVisibility(View.GONE);
-                    if (task.isSuccessful()) {
-                        reminderList.clear();
-                        for (DocumentSnapshot document : task.getResult()) {
-                            Reminder reminder = document.toObject(Reminder.class);
-                            reminderList.add(reminder);
+    private void loadReminders() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            progressBar.setVisibility(View.VISIBLE);
+            db.collection("users").document(currentUser.getUid()).collection("reminders")
+                    .addSnapshotListener((value, error) -> {
+                        if (error != null) {
+                            progressBar.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        reminderList.clear(); // Clear the list before adding new items
+                        for (DocumentChange dc : value.getDocumentChanges()) {
+                            if (dc.getType() == DocumentChange.Type.ADDED || dc.getType() == DocumentChange.Type.MODIFIED) {
+                                Reminder reminder = dc.getDocument().toObject(Reminder.class);
+                                reminder.setId(dc.getDocument().getId()); // Set the ID here
+                                reminderList.add(reminder);
+                            }
                         }
                         adapter.notifyDataSetChanged();
-                    }
-                });
+                        progressBar.setVisibility(View.GONE);
+                    });
+        }
     }
+
 
     @Override
     public void onEditClick(Reminder reminder) {
-        // Implement the edit functionality
         Intent intent = new Intent(MainActivity.this, AddReminderActivity.class);
         intent.putExtra("reminder", reminder);
         startActivity(intent);
@@ -80,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements ReminderAdapter.O
 
     @Override
     public void onDeleteClick(Reminder reminder) {
-        // Implement the delete functionality
         FirebaseUser currentUser = mAuth.getCurrentUser();
         db.collection("users").document(currentUser.getUid()).collection("reminders").document(reminder.getId())
                 .delete()
@@ -94,23 +103,15 @@ public class MainActivity extends AppCompatActivity implements ReminderAdapter.O
 
     @Override
     public void onDoneClick(Reminder reminder) {
-        // Implement the mark as done functionality
-        reminder.setDone(true);
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        db.collection("users").document(currentUser.getUid()).collection("reminders").document(reminder.getId())
-                .set(reminder)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+        // You can remove this method if you are not using it
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
-            loadReminders(mAuth.getCurrentUser().getUid());
+            loadReminders();
         }
     }
+
 }

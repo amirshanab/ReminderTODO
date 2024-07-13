@@ -1,13 +1,18 @@
 package com.example.reminderapp_todo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
@@ -16,31 +21,32 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
     private List<Reminder> reminderList;
     private Context context;
-    private OnReminderClickListener onReminderClickListener;
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+    private OnReminderClickListener listener;
 
-    public ReminderAdapter(List<Reminder> reminderList, Context context, OnReminderClickListener onReminderClickListener) {
+    public ReminderAdapter(List<Reminder> reminderList, Context context, OnReminderClickListener listener) {
         this.reminderList = reminderList;
         this.context = context;
-        this.onReminderClickListener = onReminderClickListener;
+        this.listener = listener;
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @NonNull
     @Override
     public ReminderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_reminder, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_reminder, parent, false);
         return new ReminderViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ReminderViewHolder holder, int position) {
         Reminder reminder = reminderList.get(position);
-        holder.titleTextView.setText(reminder.getTitle());
-        holder.dateTextView.setText(reminder.getDate());
-        holder.timeTextView.setText(reminder.getTime());
+        holder.reminderTitleTextView.setText(reminder.getTitle());
 
-        holder.editImageView.setOnClickListener(v -> onReminderClickListener.onEditClick(reminder));
-        holder.deleteImageView.setOnClickListener(v -> onReminderClickListener.onDeleteClick(reminder));
-        holder.doneImageView.setOnClickListener(v -> onReminderClickListener.onDoneClick(reminder));
+        holder.editReminderButton.setOnClickListener(v -> listener.onEditClick(reminder));
+        holder.deleteReminderButton.setOnClickListener(v -> listener.onDeleteClick(reminder));
     }
 
     @Override
@@ -48,19 +54,17 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         return reminderList.size();
     }
 
-    public class ReminderViewHolder extends RecyclerView.ViewHolder {
+    static class ReminderViewHolder extends RecyclerView.ViewHolder {
 
-        TextView titleTextView, dateTextView, timeTextView;
-        ImageView editImageView, deleteImageView, doneImageView;
+        TextView reminderTitleTextView;
+        ImageView editReminderButton;
+        ImageView deleteReminderButton;
 
         public ReminderViewHolder(@NonNull View itemView) {
             super(itemView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);
-            dateTextView = itemView.findViewById(R.id.dateTextView);
-            timeTextView = itemView.findViewById(R.id.timeTextView);
-            editImageView = itemView.findViewById(R.id.editImageView);
-            deleteImageView = itemView.findViewById(R.id.deleteImageView);
-            doneImageView = itemView.findViewById(R.id.doneImageView);
+            reminderTitleTextView = itemView.findViewById(R.id.reminderTitleTextView);
+            editReminderButton = itemView.findViewById(R.id.editReminderButton);
+            deleteReminderButton = itemView.findViewById(R.id.deleteReminderButton);
         }
     }
 

@@ -3,23 +3,31 @@ package com.example.reminderapp_todo;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TimePicker;
+import android.widget.DatePicker;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.Calendar;
 
 public class AddReminderActivity extends AppCompatActivity {
 
     private EditText titleEditText, dateEditText, timeEditText;
-    private Button saveButton;
     private ProgressBar progressBar;
+    private Button saveButton;
+
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+
     private Reminder reminder;
 
     @Override
@@ -30,41 +38,43 @@ public class AddReminderActivity extends AppCompatActivity {
         titleEditText = findViewById(R.id.titleEditText);
         dateEditText = findViewById(R.id.dateEditText);
         timeEditText = findViewById(R.id.timeEditText);
-        saveButton = findViewById(R.id.saveButton);
         progressBar = findViewById(R.id.progressBar);
+        saveButton = findViewById(R.id.saveButton);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        Reminder reminder = getIntent().getParcelableExtra("reminder");
+        // Get the reminder from the intent
+        reminder = getIntent().getParcelableExtra("reminder");
+
         if (reminder != null) {
+            // Populate the fields with the reminder details
             titleEditText.setText(reminder.getTitle());
             dateEditText.setText(reminder.getDate());
             timeEditText.setText(reminder.getTime());
         }
 
-        dateEditText.setOnClickListener(v -> showDatePicker());
-        timeEditText.setOnClickListener(v -> showTimePicker());
+        dateEditText.setOnClickListener(v -> showDatePickerDialog());
+        timeEditText.setOnClickListener(v -> showTimePickerDialog());
 
         saveButton.setOnClickListener(v -> saveReminder());
     }
 
-    private void showDatePicker() {
+    private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year1, month1, dayOfMonth) -> dateEditText.setText(dayOfMonth + "/" + (month1 + 1) + "/" + year1), year, month, day);
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> dateEditText.setText(dayOfMonth + "/" + (month + 1) + "/" + year),
+                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
     }
 
-    private void showTimePicker() {
+    private void showTimePickerDialog() {
         Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, (view, hourOfDay, minute1) -> timeEditText.setText(hourOfDay + ":" + minute1), hour, minute, true);
+        TimePickerDialog timePickerDialog = new TimePickerDialog(
+                this,
+                (view, hourOfDay, minute) -> timeEditText.setText(hourOfDay + ":" + minute),
+                calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
         timePickerDialog.show();
     }
 
@@ -73,7 +83,8 @@ public class AddReminderActivity extends AppCompatActivity {
         String date = dateEditText.getText().toString().trim();
         String time = timeEditText.getText().toString().trim();
 
-        if (title.isEmpty() || date.isEmpty() || time.isEmpty()) {
+        if (TextUtils.isEmpty(title) || TextUtils.isEmpty(date) || TextUtils.isEmpty(time)) {
+            // Show error message or handle empty fields
             return;
         }
 
@@ -82,15 +93,37 @@ public class AddReminderActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
-            Reminder newReminder = new Reminder(title, date, time);
-
-            db.collection("users").document(userId).collection("reminders")
-                    .add(newReminder)
-                    .addOnSuccessListener(documentReference -> {
-                        progressBar.setVisibility(View.GONE);
-                        finish();
-                    })
-                    .addOnFailureListener(e -> progressBar.setVisibility(View.GONE));
+            if (reminder == null) {
+                // Add new reminder
+                reminder = new Reminder(title, date, time);
+                db.collection("users").document(userId).collection("reminders")
+                        .add(reminder)
+                        .addOnSuccessListener(documentReference -> {
+                            reminder.setId(documentReference.getId()); // Set the ID
+                            db.collection("users").document(userId).collection("reminders")
+                                    .document(reminder.getId())
+                                    .set(reminder); // Save the reminder with the ID
+                            progressBar.setVisibility(View.GONE);
+                            setResult(RESULT_OK); // Set the result
+                            finish();
+                        })
+                        .addOnFailureListener(e -> progressBar.setVisibility(View.GONE));
+            } else {
+                // Update existing reminder
+                reminder.setTitle(title);
+                reminder.setDate(date);
+                reminder.setTime(time);
+                db.collection("users").document(userId).collection("reminders")
+                        .document(reminder.getId())
+                        .set(reminder)
+                        .addOnSuccessListener(aVoid -> {
+                            progressBar.setVisibility(View.GONE);
+                            setResult(RESULT_OK); // Set the result
+                            finish();
+                        })
+                        .addOnFailureListener(e -> progressBar.setVisibility(View.GONE));
+            }
         }
     }
+
 }
