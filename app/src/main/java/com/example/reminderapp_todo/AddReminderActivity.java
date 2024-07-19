@@ -1,15 +1,17 @@
 package com.example.reminderapp_todo;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TimePicker;
-import android.widget.DatePicker;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,7 +19,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class AddReminderActivity extends AppCompatActivity {
 
@@ -73,7 +79,7 @@ public class AddReminderActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         TimePickerDialog timePickerDialog = new TimePickerDialog(
                 this,
-                (view, hourOfDay, minute) -> timeEditText.setText(hourOfDay + ":" + minute),
+                (view, hourOfDay, minute) -> timeEditText.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)),
                 calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
         timePickerDialog.show();
     }
@@ -103,6 +109,7 @@ public class AddReminderActivity extends AppCompatActivity {
                             db.collection("users").document(userId).collection("reminders")
                                     .document(reminder.getId())
                                     .set(reminder); // Save the reminder with the ID
+                            scheduleReminder(reminder);
                             progressBar.setVisibility(View.GONE);
                             setResult(RESULT_OK); // Set the result
                             finish();
@@ -117,6 +124,7 @@ public class AddReminderActivity extends AppCompatActivity {
                         .document(reminder.getId())
                         .set(reminder)
                         .addOnSuccessListener(aVoid -> {
+                            scheduleReminder(reminder);
                             progressBar.setVisibility(View.GONE);
                             setResult(RESULT_OK); // Set the result
                             finish();
@@ -126,4 +134,23 @@ public class AddReminderActivity extends AppCompatActivity {
         }
     }
 
+    private void scheduleReminder(Reminder reminder) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        String reminderDateTime = reminder.getDate() + " " + reminder.getTime();
+
+        try {
+            Date date = sdf.parse(reminderDateTime);
+            long timeInMillis = date != null ? date.getTime() : 0;
+
+            Intent intent = new Intent(this, ReminderReceiver.class);
+            intent.putExtra("title", reminder.getTitle());
+            intent.putExtra("message", "Reminder for " + reminder.getTitle());
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, reminder.getId().hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
 }

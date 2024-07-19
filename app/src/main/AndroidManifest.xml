@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -25,6 +26,8 @@
         <activity android:name=".AddReminderActivity" android:exported="true" />
         <activity android:name=".AuthActivity" android:exported="true" />
         <activity android:name=".SettingsActivity" android:exported="true" />
+        <receiver android:name=".ReminderReceiver" />
+
 
     </application>
 
