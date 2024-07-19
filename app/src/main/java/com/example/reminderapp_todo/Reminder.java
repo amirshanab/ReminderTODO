@@ -4,14 +4,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Reminder implements Parcelable {
+
     private String id;
     private String title;
     private String date;
     private String time;
-    private boolean isDone;
 
     public Reminder() {
-        // Public no-arg constructor needed for Firestore
+        // Required empty constructor for Firestore serialization
     }
 
     public Reminder(String title, String date, String time) {
@@ -25,7 +25,6 @@ public class Reminder implements Parcelable {
         title = in.readString();
         date = in.readString();
         time = in.readString();
-        isDone = in.readByte() != 0;
     }
 
     public static final Creator<Reminder> CREATOR = new Creator<Reminder>() {
@@ -40,21 +39,6 @@ public class Reminder implements Parcelable {
         }
     };
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id);
-        dest.writeString(title);
-        dest.writeString(date);
-        dest.writeString(time);
-        dest.writeByte((byte) (isDone ? 1 : 0));
-    }
-
-    // Getters and setters
     public String getId() {
         return id;
     }
@@ -87,11 +71,16 @@ public class Reminder implements Parcelable {
         this.time = time;
     }
 
-    public boolean isDone() {
-        return isDone;
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public void setDone(boolean done) {
-        isDone = done;
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(title);
+        dest.writeString(date);
+        dest.writeString(time);
     }
 }

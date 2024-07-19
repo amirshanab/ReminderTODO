@@ -24,6 +24,8 @@
         <activity android:name=".MainActivity" android:exported="true" />
         <activity android:name=".AddReminderActivity" android:exported="true" />
         <activity android:name=".AuthActivity" android:exported="true" />
+        <activity android:name=".SettingsActivity" android:exported="true" />
+
     </application>
 
 </manifest>
