@@ -3,12 +3,24 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary">
 
+    <TextView
+        android:id="@+id/todo_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:text="TODO"
+        android:textColor="@android:color/white"
+        android:textSize="80dp" />
+
     <ImageView
         android:id="@+id/splash_logo"
-        android:layout_width="321dp"
-        android:layout_height="324dp"
+        android:layout_width="301dp"
+        android:layout_height="321dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
+        android:layout_below="@id/todo_text"
+        android:layout_marginTop="-20dp"
         android:src="@drawable/logo" />
 
     <LinearLayout
@@ -16,32 +28,32 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/splash_logo"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="5 0dp"
+        android:layout_marginTop="30dp"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Christopher Haj - 207824772"
-            android:textSize="16sp"
             android:textColor="@android:color/white"
-            android:gravity="center"/>
+            android:textSize="20sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Amir Abu Shanab - 208586214"
-            android:textSize="16sp"
             android:textColor="@android:color/white"
-            android:gravity="center"/>
+            android:textSize="20sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Wisam Yaghmour - 207293796"
-            android:textSize="16sp"
             android:textColor="@android:color/white"
-            android:gravity="center"/>
+            android:textSize="20sp" />
     </LinearLayout>
 
 </RelativeLayout>
