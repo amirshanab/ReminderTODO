@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements ReminderAdapter.O
     private FirebaseFirestore db;
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
+    private TextView noRemindersTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements ReminderAdapter.O
 
         recyclerView = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
+        noRemindersTextView = findViewById(R.id.noRemindersTextView);
         Button addReminderButton = findViewById(R.id.addReminderButton);
         Button settingsButton = findViewById(R.id.settingsButton);
 
@@ -82,6 +85,15 @@ public class MainActivity extends AppCompatActivity implements ReminderAdapter.O
                         }
                         adapter.notifyDataSetChanged();
                         progressBar.setVisibility(View.GONE);
+
+                        // Show or hide the "No Reminders Set Yet" message based on the list
+                        if (reminderList.isEmpty()) {
+                            noRemindersTextView.setVisibility(View.VISIBLE);
+                            recyclerView.setVisibility(View.GONE);
+                        } else {
+                            noRemindersTextView.setVisibility(View.GONE);
+                            recyclerView.setVisibility(View.VISIBLE);
+                        }
                     });
         }
     }
@@ -104,6 +116,12 @@ public class MainActivity extends AppCompatActivity implements ReminderAdapter.O
                         if (task.isSuccessful()) {
                             reminderList.remove(reminder);
                             adapter.notifyDataSetChanged();
+
+                            // Show or hide the "No Reminders Set Yet" message based on the list
+                            if (reminderList.isEmpty()) {
+                                noRemindersTextView.setVisibility(View.VISIBLE);
+                                recyclerView.setVisibility(View.GONE);
+                            }
                         }
                     });
         }

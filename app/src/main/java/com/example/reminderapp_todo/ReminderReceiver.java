@@ -11,29 +11,32 @@ import androidx.core.app.NotificationCompat;
 
 public class ReminderReceiver extends BroadcastReceiver {
 
-    private static final String CHANNEL_ID = "REMINDER_CHANNEL";
-
     @Override
     public void onReceive(Context context, Intent intent) {
         String title = intent.getStringExtra("title");
-        String message = intent.getStringExtra("message");
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        String channelId = "reminder_channel_id";
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Reminder Notifications", NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "Reminder Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
             notificationManager.createNotificationChannel(channel);
         }
 
         Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setSmallIcon(R.drawable.ic_notification) // Ensure this matches your drawable resource name
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Reminder")
+                .setContentText(title)
                 .setSound(soundUri)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
-        notificationManager.notify(0, notificationBuilder.build());
+        notificationManager.notify(1, builder.build());
     }
 }

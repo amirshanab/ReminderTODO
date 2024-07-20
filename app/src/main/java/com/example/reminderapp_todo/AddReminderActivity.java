@@ -72,6 +72,7 @@ public class AddReminderActivity extends AppCompatActivity {
                 this,
                 (view, year, month, dayOfMonth) -> dateEditText.setText(dayOfMonth + "/" + (month + 1) + "/" + year),
                 calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000); // Set the minimum date to today
         datePickerDialog.show();
     }
 
@@ -79,7 +80,7 @@ public class AddReminderActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         TimePickerDialog timePickerDialog = new TimePickerDialog(
                 this,
-                (view, hourOfDay, minute) -> timeEditText.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)),
+                (view, hourOfDay, minute) -> timeEditText.setText(String.format("%02d:%02d", hourOfDay, minute)),
                 calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
         timePickerDialog.show();
     }
@@ -109,7 +110,7 @@ public class AddReminderActivity extends AppCompatActivity {
                             db.collection("users").document(userId).collection("reminders")
                                     .document(reminder.getId())
                                     .set(reminder); // Save the reminder with the ID
-                            scheduleReminder(reminder);
+                            setAlarm(title, date, time); // Set the alarm
                             progressBar.setVisibility(View.GONE);
                             setResult(RESULT_OK); // Set the result
                             finish();
@@ -124,7 +125,7 @@ public class AddReminderActivity extends AppCompatActivity {
                         .document(reminder.getId())
                         .set(reminder)
                         .addOnSuccessListener(aVoid -> {
-                            scheduleReminder(reminder);
+                            setAlarm(title, date, time); // Set the alarm
                             progressBar.setVisibility(View.GONE);
                             setResult(RESULT_OK); // Set the result
                             finish();
@@ -134,21 +135,22 @@ public class AddReminderActivity extends AppCompatActivity {
         }
     }
 
-    private void scheduleReminder(Reminder reminder) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        String reminderDateTime = reminder.getDate() + " " + reminder.getTime();
+    private void setAlarm(String title, String date, String time) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
+        Intent intent = new Intent(this, ReminderReceiver.class);
+        intent.putExtra("title", title);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         try {
-            Date date = sdf.parse(reminderDateTime);
-            long timeInMillis = date != null ? date.getTime() : 0;
-
-            Intent intent = new Intent(this, ReminderReceiver.class);
-            intent.putExtra("title", reminder.getTitle());
-            intent.putExtra("message", "Reminder for " + reminder.getTitle());
-
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, reminder.getId().hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
+            Date reminderDate = dateFormat.parse(date + " " + time);
+            if (reminderDate != null) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(reminderDate);
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            }
         } catch (ParseException e) {
             e.printStackTrace();
         }
