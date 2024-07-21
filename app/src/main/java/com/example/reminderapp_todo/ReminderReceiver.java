@@ -9,11 +9,15 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 public class ReminderReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String title = intent.getStringExtra("title");
+        String reminderId = intent.getStringExtra("reminderId");
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         String channelId = "reminder_channel_id";
@@ -38,5 +42,25 @@ public class ReminderReceiver extends BroadcastReceiver {
                 .setAutoCancel(true);
 
         notificationManager.notify(1, builder.build());
+
+        // Delete the reminder from Firestore
+        deleteReminderFromFirestore(reminderId);
+    }
+
+    private void deleteReminderFromFirestore(String reminderId) {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = mAuth.getCurrentUser().getUid();
+
+        if (userId != null && reminderId != null) {
+            db.collection("users").document(userId).collection("reminders").document(reminderId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        // Successfully deleted reminder
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle failure
+                    });
+        }
     }
 }

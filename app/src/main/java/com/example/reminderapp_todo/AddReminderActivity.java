@@ -110,7 +110,7 @@ public class AddReminderActivity extends AppCompatActivity {
                             db.collection("users").document(userId).collection("reminders")
                                     .document(reminder.getId())
                                     .set(reminder); // Save the reminder with the ID
-                            setAlarm(title, date, time); // Set the alarm
+                            setAlarm(title, date, time, reminder.getId()); // Set the alarm
                             progressBar.setVisibility(View.GONE);
                             setResult(RESULT_OK); // Set the result
                             finish();
@@ -125,7 +125,7 @@ public class AddReminderActivity extends AppCompatActivity {
                         .document(reminder.getId())
                         .set(reminder)
                         .addOnSuccessListener(aVoid -> {
-                            setAlarm(title, date, time); // Set the alarm
+                            setAlarm(title, date, time, reminder.getId()); // Set the alarm
                             progressBar.setVisibility(View.GONE);
                             setResult(RESULT_OK); // Set the result
                             finish();
@@ -135,11 +135,12 @@ public class AddReminderActivity extends AppCompatActivity {
         }
     }
 
-    private void setAlarm(String title, String date, String time) {
+    private void setAlarm(String title, String date, String time, String reminderId) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(this, ReminderReceiver.class);
         intent.putExtra("title", title);
+        intent.putExtra("reminderId", reminderId);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
